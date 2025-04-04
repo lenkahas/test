@@ -1,34 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Map</title>
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- Include Leaflet.js for interactive maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interactive Map with Location Search</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+  />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #map {
+      height: 500px;
+      width: 90%;
+      max-width: 800px;
+      margin: 20px auto;
+      border: 2px solid #333;
+      border-radius: 10px;
+    }
+
+    input[type="text"] {
+      padding: 8px;
+      width: 250px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 8px 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .input-group {
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
 
-    <h2>My Interactive Map</h2>
-    <div id="map"></div>
+  <h2>Search for a Location</h2>
 
-    <script>
-        // Initialize the map and set its view
-        var map = L.map('map').setView([51.505, -0.09], 13);
+  <div class="input-group">
+    <input type="text" id="locationInput" placeholder="Enter a city or place..." />
+    <button onclick="searchLocation()">Search</button>
+  </div>
 
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+  <div id="map"></div>
 
-        // Add a marker
-        var marker = L.marker([51.505, -0.09]).addTo(map)
-            .bindPopup('Hello! This is my interactive map.')
-            .openPopup();
-    </script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+  <script>
+    var map = L.map('map').setView([52.3555, -1.1743], 6); // Centered on England
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker;
+
+    function searchLocation() {
+      var location = document.getElementById("locationInput").value;
+
+      if (!location) return;
+
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${location}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.length > 0) {
+            var lat = data[0].lat;
+            var lon = data[0].lon;
+
+            map.setView([lat, lon], 13);
+
+            if (marker) {
+              map.removeLayer(marker);
+            }
+
+            marker = L.marker([lat, lon]).addTo(map)
+              .bindPopup(`<b>${location}</b>`)
+              .openPopup();
+          } else {
+            alert("Location not found. Try a different name.");
+          }
+        });
+    }
+  </script>
 
 </body>
 </html>
+
